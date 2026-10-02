@@ -5,3 +5,6 @@ desktop.ini
 *.key
 credentials.*
 node_modules/
+__pycache__/
+*.pyc
+.venv/

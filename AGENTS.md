@@ -3,29 +3,40 @@
 > 本檔為跨 Agent 通用的專案藍圖（AGENTS.md 開放標準）。任何 Agent 的每個 session 都應先讀本檔＋`handoff.md`。
 
 ## 專案簡介
-Node.js + Express 新聞聚合服務：依關鍵字＋日期區間（start/end）聚合經濟日報（money.udn.com）、工商時報（ctee.com.tw）、Yahoo 奇摩（tw.news.yahoo.com）、CMoney 的新聞，支援 JSON 查詢與 CSV 匯出。
+財經新聞多面向重點摘要與 Obsidian 知識庫整合分析系統（架構說明書：`財經知識系統.docx`）。
+Python FastAPI 後端：手動發起即時分析，三層級 Prompt 鏈（宏觀經濟 → 台股資金流 → 個股＋Portfolio Pool，
+Gemini `gemini-2.5-flash`），報告直寫 Obsidian Vault（`財經分析/`），歷史筆記可做 RAG 二次對比。
+資料來源（只用已驗證端點）：Yahoo 台股 RSS、證交所 OpenAPI（BWIBBU／MI_INDEX／AVG）、Yahoo Finance 行情、
+證交所三大法人 JSON（有就用、沒有就退回新聞法人報導）。CNN 貪婪指數被擋（418），暫以 VIX 代理。
 
 ## 關鍵時程
-<!-- 目前無指定時程 -->
+- 架構說明書建議 21 個工作天；首期以後端 MVP 為範圍（已完成），Vue 3 前端為第二刀
 
 ## 目標與路線圖
-- [ ] 階段一：驗證各來源搜尋 selector 可用性，修復失效的解析（server.js 內有 NOTE 提醒版面異動需更新）
-- [ ] 階段二：前端 public/ 搜尋＋日期篩選＋CSV 下載體驗完善
-- [ ] 階段三：錯誤處理、日誌、部署（PORT 環境變數已支援）
+- [x] 後端 MVP：FastAPI 四支 API（trigger／obsidian/sync／portfolio/pool／query-ai）＋三層級分析＋Vault 直寫（2026-10-02 首跑成功，pool 4 檔）
+- [ ] 第二刀：Vue 3 響應式前端（觸發分析、瀏覽報告＋Pool、歷史 RAG 問答）
+- [ ] 第三刀：PostgreSQL（日誌／設定／快取）、排程每日自動分析、健康檢查告警
 
 ## 資料夾結構
 ```
 news-aggregator/
 ├── AGENTS.md
 ├── handoff.md
-├── .gitignore
-├── package.json          # name: news-aggregator，依賴 express/axios/cheerio/cors/csv-stringify/dayjs
-├── package-lock.json
-├── server.js            # Express 主程式：/api/search、/api/export.csv，四個來源爬蟲＋日期過濾＋去重＋排序
-├── public/
-│   ├── index.html
-│   └── app.js
-└── node_modules/
+├── .gitignore            # 含 .env（Gemini key＋Vault 路徑只放本機）
+├── .env                  # 本機專用，不進 repo
+├── 財經知識系統.docx      # 架構說明書原文
+├── backend/
+│   ├── requirements.txt  # fastapi／uvicorn／httpx
+│   └── app/
+│       ├── main.py       # 四支 API＋/health
+│       ├── config.py     # .env 讀取
+│       ├── schemas.py    # Trigger／Sync／QueryAI 模型
+│       ├── providers.py  # Yahoo RSS／TWSE／Yahoo行情
+│       ├── prompts.py    # 三層級 Prompt 鏈＋RAG
+│       ├── llm.py        # Gemini REST
+│       └── vault.py      # Vault 直寫＋Pool 解析
+└── G:\我的雲端硬碟\2ndBrain\財經分析\   # 報告輸出地（Vault 外，不進 repo）
+    └── YYYY-MM-DD_財經分析.md
 ```
 
 ## 同步層級（本專案初始化至第 3 層級）
