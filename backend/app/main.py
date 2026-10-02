@@ -46,7 +46,6 @@ def trigger(req: TriggerRequest):
     stock, pool_truncated = vault.clean_section(stock)
     pool = vault.extract_pool(stock)
     md = (
-        f"# {day} 財經三層級分析\n\n"
         f"標籤：#財經分析 #宏觀分析 #PortfolioPool\n\n"
         f"分析日期：{day}\n\n"
         f"## 一、宏觀層級\n\n{macro}\n\n"
