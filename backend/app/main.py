@@ -35,12 +35,15 @@ def trigger(req: TriggerRequest):
             else ""
         )
         stock = (
-            llm.generate(prompts.stock_prompt(flow or macro, data))
+            llm.generate(prompts.stock_prompt(flow or macro, data), max_tokens=8192)
             if req.source_scope in ("all", "stocks")
             else ""
         )
     except llm.LLMError as e:
         raise HTTPException(502, str(e))
+    macro, _ = vault.clean_section(macro)
+    flow, _ = vault.clean_section(flow)
+    stock, pool_truncated = vault.clean_section(stock)
     pool = vault.extract_pool(stock)
     md = (
         f"# {day} 財經三層級分析\n\n"
@@ -48,7 +51,7 @@ def trigger(req: TriggerRequest):
         f"分析日期：{day}\n\n"
         f"## 一、宏觀層級\n\n{macro}\n\n"
         f"## 二、台股與產業層級\n\n{flow}\n\n"
-        f"## 三、個股層級與 Portfolio Pool\n\n{stock}\n"
+        f"## 三、個股層級分析及潛力股\n\n{stock}\n"
     )
     try:
         fname = vault.write_report(day, md)
@@ -59,6 +62,7 @@ def trigger(req: TriggerRequest):
         "report_file": fname,
         "pool_count": len(pool),
         "pool": pool,
+        "pool_truncated": pool_truncated,
         "sources": {
             "rss": len(data["rss"]),
             "indices_ok": sum(1 for v in data["indices"].values() if v.get("last")),

@@ -7,6 +7,7 @@ from pathlib import Path
 from . import config
 
 POOL_RE = re.compile(r"```pool\s*\n(.*?)```", re.S)
+POOL_OPEN_RE = re.compile(r"```pool\s*\n?")
 
 
 def vault_dir(folder: str = "") -> Path:
@@ -63,6 +64,39 @@ def extract_pool(markdown: str) -> list[dict]:
         return data if isinstance(data, list) else []
     except (json.JSONDecodeError, TypeError):
         return []
+
+
+PREAMBLE_RE = re.compile(r"(作為.{0,12}分析師|根據您提供|好的，|以下(是|為).{0,20}(摘要|分析))")
+
+
+def clean_section(text: str) -> tuple[str, bool]:
+    """清掉 LLM 輸出的重複標題（##／###）、次標題與開場白，保留 ```pool 區塊。
+    回傳 (清理後文字, pool是否因截斷而遺失)。"""
+    m = POOL_RE.search(text or "")
+    truncated = False
+    if m:
+        pool_block = m.group(0)
+        body = POOL_RE.sub("", text)
+    elif POOL_OPEN_RE.search(text or ""):
+        # 有開無收：LLM 輸出被 token 上限截斷，丟掉殘缺片段以免污染報告
+        pool_block = ""
+        body = POOL_OPEN_RE.split(text, maxsplit=1)[0]
+        truncated = True
+    else:
+        pool_block, body = "", text or ""
+    kept: list[str] = []
+    for line in body.splitlines():
+        s = line.strip()
+        if not s:
+            kept.append("")
+            continue
+        if s.startswith("#"):  # 所有層級標題
+            continue
+        if len([k for k in kept if k.strip()]) < 3 and PREAMBLE_RE.search(s):
+            continue  # 開頭的 AI 開場白
+        kept.append(line)
+    cleaned = re.sub(r"\n{3,}", "\n\n", "\n".join(kept).strip())
+    return cleaned + ("\n\n" + pool_block if pool_block else ""), truncated
 
 
 def search_pool(tag: str = "", min_confidence: float = 0.0, files: int = 10) -> list[dict]:
