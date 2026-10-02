@@ -3,25 +3,25 @@
 > 任何 Agent、任何電腦接手前**必讀**；收工時**必更新**。本檔只放交接必需的精簡資訊，詳細脈絡放 Obsidian（若有 L3）。
 
 ## ⏯️ 目前做到哪
-後端 MVP 完成並首跑成功（2026-10-02）：FastAPI 四支 API＋三層級 Gemini 分析，報告已直寫
-`G:\我的雲端硬碟\2ndBrain\財經分析\2026-10-02_財經分析.md`，pool 4 檔（2330／2454／2409／6770）。
+報告格式迭代＋強健性修補完成並已推（db34fa3）：去大標題／重複標題／開場白／次標題、第三節改名、
+截斷防護、429 退避重試。Gemini key 已換新（AQ 開頭那把，.env 本機）。測試服務已停。
 
 ## 🚦 目前狀態
 - 可運行：`python -m uvicorn backend.app.main:app --port 8000`，`/health` 正常
-- 四支 API 皆實測通過：trigger／obsidian/sync（經 trigger 驗證寫入）／portfolio/pool（min_confidence=0.8→2 檔）／query-ai（RAG 有回答）
-- 定案：資料官方 API 組合＋Yahoo RSS、MCP 簡化直寫、Gemini 2.5-flash、後端 MVP 優先
-- 已知缺口：CNN 貪婪指數 418 被擋（VIX 代理）、TWSE 三大法人 JSON 端點未定（有就用、沒有退回新聞報導）
+- 四支 API 皆實測通過（trigger／sync／pool／query-ai）；最新版 prompt（無標籤推薦原則）**尚未實跑驗證**（被 429 擋下）
+- 已知缺口：CNN 貪婪指數 418 被擋（VIX 代理）、TWSE 三大法人 JSON 端點未定；同日報告覆寫無版本保留
 
 ## ➡️ 下一步
-1. 第二刀：Vue 3 前端（觸發分析、瀏覽報告＋Pool、歷史問答）
-2. 之後：排程每日自動分析、PostgreSQL、健康檢查告警
+1. （優先）額度重置後跑一次 trigger，驗證無標籤推薦原則版報告＋pool 解析
+2. 待定：是否做一頁式報告網頁（Obsidian＋圖表→Netlify，需 trigger 多存 data.json）／是否寫成 skill（免 key 但需手動觸發）
+3. 之後：排程每日自動分析、PostgreSQL、健康檢查告警
 
 ## ⚠️ 注意事項
 - `.env`（Gemini key＋Vault 路徑）只放本機，絕不 commit（已在 .gitignore）
-- 舊 Node 檔（package.json／node_modules）已清，舊程式只留 git 歷史
-- 啟動：`pip install -r backend/requirements.txt` 後跑 uvicorn，PORT 預設 8000（.env 可改）
+- Gemini 免費額度今日被連打多次觸發 429，已加退避重試；單日多次 trigger 仍可能撞牆，驗證跑一次就好
+- 勿在 trigger 後用舊程式碼的 server（port 8000 殘留行程曾導致舊碼執行，已清；重啟前先確認 port 淨空）
 
 ## 🕐 最後更新
-- 時間：2026-10-02 08:00
+- 時間：2026-10-03 08:30
 - 更新者：OpenCode @ DESKTOP-UUJ9PN5
-- Git push：✅ 已推（後端 MVP，含 handoff 待推）
+- Git push：✅ 已推（db34fa3，含 handoff 待推）
