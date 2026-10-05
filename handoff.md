@@ -3,18 +3,18 @@
 > 任何 Agent、任何電腦接手前**必讀**；收工時**必更新**。本檔只放交接必需的精簡資訊，詳細脈絡放 Obsidian（若有 L3）。
 
 ## ⏯️ 目前做到哪
-報告格式迭代＋強健性修補完成並已推（db34fa3）：去大標題／重複標題／開場白／次標題、第三節改名、
-截斷防護、429 退避重試。Gemini key 已換新（AQ 開頭那把，.env 本機）。測試服務已停。
+skill 方向啟動完成並已推（35d41f0）：trigger 多存 `*_data.json`、新建 report-page skill、
+首版一頁式網頁（`page/`）已產出並驗證可載入。新 prompt（無標籤推薦原則）已實跑驗證通過
+（2026-10-06 報告，pool 6 檔）。測試服務（8000／8080）已停。
 
 ## 🚦 目前狀態
-- 可運行：`python -m uvicorn backend.app.main:app --port 8000`，`/health` 正常
-- 四支 API 皆實測通過（trigger／sync／pool／query-ai）；最新版 prompt（無標籤推薦原則）**尚未實跑驗證**（被 429 擋下）
+- 可運行：`python -m uvicorn backend.app.main:app --port 8000`；靜態頁：`page/`（發佈目錄）
+- trigger 回傳多 `data_file`；skill 在 `~/.config/opencode/skills/report-page/`（全域，不在 repo）
 - 已知缺口：CNN 貪婪指數 418 被擋（VIX 代理）、TWSE 三大法人 JSON 端點未定；同日報告覆寫無版本保留
 
 ## ➡️ 下一步
-1. （優先）額度重置後跑一次 trigger，驗證無標籤推薦原則版報告＋pool 解析
-2. 待定：是否做一頁式報告網頁（Obsidian＋圖表→Netlify，需 trigger 多存 data.json）／是否寫成 skill（免 key 但需手動觸發）
-3. 之後：排程每日自動分析、PostgreSQL、健康檢查告警
+1. Netlify 連 wenwen88/news-aggregator，發佈目錄設 `page`（首次需手動連，之後 push 自動部署）
+2. 之後：排程每日自動分析、PostgreSQL、健康檢查告警
 
 ## ⚠️ 注意事項
 - `.env`（Gemini key＋Vault 路徑）只放本機，絕不 commit（已在 .gitignore）

@@ -14,10 +14,10 @@ Gemini `gemini-2.5-flash`），報告直寫 Obsidian Vault（`財經分析/`）�
 
 ## 目標與路線圖
 - [x] 後端 MVP：FastAPI 四支 API（trigger／obsidian/sync／portfolio/pool／query-ai）＋三層級分析＋Vault 直寫（2026-10-02 首跑成功）
-- [x] 報告格式迭代：去大標題／重複標題／開場白／次標題、第三節改名、截斷防護（8192 tokens＋truncated 偵測）、429 退避重試
-- [ ] 待驗證：無標籤推薦原則版 prompt（被 Gemini 429 擋下，額度重置後跑一次 trigger）
-- [ ] 待定：一頁式報告網頁（Obsidian 報告為骨幹＋圖表，部署 Netlify；需 trigger 多存 data.json）＋是否寫成 skill（skill 模式免 key、但需手動觸發）
-- [ ] 第三刀：PostgreSQL（日誌／設定／快取）、排程每日自動分析、健康檢查告警
+- [x] 報告格式迭代：去大標題／重複標題／開場白／次標題、第三節改名、截斷防護（8192 tokens＋truncated 偵測）、429 退避重試、無標籤推薦原則（2026-10-06 驗證通過）
+- [x] 一頁式報告網頁 MVP：trigger 多存 data.json＋report-page skill＋`page/`（待連 Netlify 發佈）
+- [ ] 待定：排程每日自動分析（後端 key 版）vs 純 skill 手動觸發（免 key 版）二選一
+- [ ] 第三刀：PostgreSQL（日誌／設定／快取）、健康檢查告警
 
 ## 資料夾結構
 ```
