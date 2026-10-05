@@ -26,6 +26,14 @@ def write_report(analysis_date: str, markdown: str) -> str:
     return fname
 
 
+def write_data(analysis_date: str, payload: dict) -> str:
+    """寫入同日機器數據（給一頁式網頁圖表用），回傳檔名。"""
+    d = vault_dir()
+    fname = f"{analysis_date}_data.json"
+    (d / fname).write_text(json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8")
+    return fname
+
+
 def write_raw(folder: str, filename: str, markdown: str) -> str:
     d = vault_dir(folder)
     safe = "".join(c for c in filename if c not in '<>:"/\\|?*') or f"note_{date.today()}.md"

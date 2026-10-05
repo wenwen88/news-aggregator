@@ -54,11 +54,21 @@ def trigger(req: TriggerRequest):
     )
     try:
         fname = vault.write_report(day, md)
+        data_fname = vault.write_data(day, {
+            "analysis_date": day,
+            "indices": data["indices"],
+            "mi_index": data["mi_index"],
+            "fund": data["fund"],
+            "screen": data["screen"],
+            "rss": data["rss"],
+            "pool": pool,
+        })
     except RuntimeError as e:
         raise HTTPException(500, str(e))
     return {
         "analysis_date": day,
         "report_file": fname,
+        "data_file": data_fname,
         "pool_count": len(pool),
         "pool": pool,
         "pool_truncated": pool_truncated,

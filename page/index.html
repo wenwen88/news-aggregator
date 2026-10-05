@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>每日財經分析報告</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+<style>
+  body { font-family: -apple-system, "Noto Sans TC", "Microsoft JhengHei", sans-serif; margin: 0; background: #f4f6fa; color: #1a1a1a; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 64px; }
+  .card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  h2 { font-size: 1.25rem; border-left: 5px solid #0b74de; padding-left: 10px; }
+  .date { color: #666; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; }
+  th { background: #f7f9fc; }
+  canvas { max-height: 320px; }
+  a { color: #0b74de; }
+  footer { text-align: center; color: #999; font-size: .8rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card"><h1>每日財經分析報告</h1><div class="date" id="date"></div></div>
+  <div class="card"><h2>市場漲跌</h2><canvas id="chIndices"></canvas></div>
+  <div class="card"><h2>潛力股信心分數</h2><canvas id="chPool"></canvas></div>
+  <div id="sections"></div>
+  <div class="card"><h2>個股池明細</h2><div style="overflow-x:auto"><table id="tblPool"></table></div></div>
+  <div class="card"><h2>乖離篩選（收盤 vs 月均）</h2><div style="overflow-x:auto"><table id="tblScreen"></table></div></div>
+  <div class="card"><h2>今日頭條</h2><div style="overflow-x:auto"><table id="tblRss"></table></div></div>
+  <footer>資料來源：Yahoo RSS、證交所 OpenAPI、Yahoo Finance ｜ 由財經知識系統自動產生</footer>
+</div>
+<script>
+function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function stripPool(md){return String(md||'').replace(/```pool[\s\S]*?```/g,'').trim();}
+function tbl(el, head, rows){document.getElementById(el).innerHTML='<tr>'+head.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('');}
+fetch('data.json').then(r=>r.json()).then(d=>{
+  document.title=d.date+' 財經分析報告';
+  document.getElementById('date').textContent='分析日期：'+d.date;
+  const sec=document.getElementById('sections');
+  d.sections.forEach(s=>{const div=document.createElement('div');div.className='card';div.innerHTML='<h2>'+esc(s.title)+'</h2><div>'+marked.parse(stripPool(s.md))+'</div>';sec.appendChild(div);});
+  const ix=(d.indices||[]).filter(x=>x.chg!==null&&x.chg!==undefined);
+  new Chart(document.getElementById('chIndices'),{type:'bar',data:{labels:ix.map(x=>x.name),datasets:[{data:ix.map(x=>x.chg),backgroundColor:ix.map(x=>x.chg>=0?'#d43d2a':'#1a7f37')}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:'漲跌 %'}}}}});
+  const pool=d.pool||[];
+  new Chart(document.getElementById('chPool'),{type:'bar',data:{labels:pool.map(p=>p.code+' '+p.name),datasets:[{data:pool.map(p=>p.confidence),backgroundColor:'#0b74de'}]},options:{plugins:{legend:{display:false}},scales:{y:{min:0,max:1}}}});
+  tbl('tblPool',['代碼','名稱','信心','理由'],pool.map(p=>[esc(p.code),esc(p.name),p.confidence,esc(p.reason)]));
+  tbl('tblScreen',['代碼','名稱','收盤','乖離月線%','PE','殖利率%'],(d.screen||[]).map(s=>[esc(s.code),esc(s.name),s.close,s.bias_pct,s.pe??'',s.yield??'']));
+  tbl('tblRss',['標題','時間'],(d.rss||[]).map(n=>['<a href="'+esc(n.link)+'" target="_blank" rel="noopener">'+esc(n.title)+'</a>',esc(n.pubDate)]));
+}).catch(e=>{document.querySelector('.wrap').insertAdjacentHTML('beforeend','<div class="card">載入 data.json 失敗：'+esc(e.message)+'</div>');});
+</script>
+</body>
+</html>
